@@ -107,7 +107,8 @@ export async function updateSurveyRecord(record: SurveyRecord): Promise<void> {
 }
 
 // --- User Profile Management ---
-interface UserProfile {
+export interface UserProfile {
+  // Export interface for use in components
   name: string
   email: string
 }

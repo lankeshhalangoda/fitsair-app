@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getStoredSurveys, getStoredFlightNumbers } from "@/lib/indexed-db"
+import { getStoredSurveys, getStoredFlightNumbers, getUserProfile, addSurvey, addFlightNumber } from "@/lib/indexed-db"
 import AppLayout from "@/components/layout/app-layout"
 
 export default function DashboardPage() {
@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const [flightNumbers, setFlightNumbers] = useState<{ id: number; number: string }[]>([])
   const [selectedSurveyId, setSelectedSurveyId] = useState<string | null>(null)
   const [selectedFlightNumberId, setSelectedFlightNumberId] = useState<string | null>(null)
+  const [userName, setUserName] = useState("FitsAir User")
 
   useEffect(() => {
     // Check authentication
@@ -24,15 +25,33 @@ export default function DashboardPage() {
     }
 
     const loadData = async () => {
-      const storedSurveys = await getStoredSurveys()
-      const storedFlightNumbers = await getStoredFlightNumbers()
-      setSurveys(storedSurveys)
-      setFlightNumbers(storedFlightNumbers)
-      if (storedSurveys.length > 0 && !selectedSurveyId) {
-        setSelectedSurveyId(String(storedSurveys[0].id))
+      // Pre-configure default survey and flight number if stores are empty
+      const currentSurveys = await getStoredSurveys()
+      if (currentSurveys.length === 0) {
+        await addSurvey({ name: "General Feedback Survey", url: "https://emojot.com/fitsair" })
       }
-      if (storedFlightNumbers.length > 0 && !selectedFlightNumberId) {
-        setSelectedFlightNumberId(String(storedFlightNumbers[0].id))
+      const currentFlightNumbers = await getStoredFlightNumbers()
+      if (currentFlightNumbers.length === 0) {
+        await addFlightNumber({ number: "FA123" })
+      }
+
+      // Load data after potential pre-configuration
+      const updatedSurveys = await getStoredSurveys()
+      const updatedFlightNumbers = await getStoredFlightNumbers()
+      setSurveys(updatedSurveys)
+      setFlightNumbers(updatedFlightNumbers)
+
+      if (updatedSurveys.length > 0 && !selectedSurveyId) {
+        setSelectedSurveyId(String(updatedSurveys[0].id))
+      }
+      if (updatedFlightNumbers.length > 0 && !selectedFlightNumberId) {
+        setSelectedFlightNumberId(String(updatedFlightNumbers[0].id))
+      }
+
+      // Load user profile for greeting
+      const profile = await getUserProfile()
+      if (profile?.name) {
+        setUserName(profile.name)
       }
     }
     loadData()
@@ -55,9 +74,8 @@ export default function DashboardPage() {
       <main className="flex-1 p-4 flex flex-col items-center justify-center">
         <Card className="w-full max-w-md bg-fitsair-white text-fitsair-dark-blue p-6 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-500">
           <CardHeader className="pb-4">
-            <CardTitle className="text-center text-3xl font-bold font-dm-serif-display">
-              Launch Customer Survey
-            </CardTitle>
+            <CardTitle className="text-center text-3xl font-bold font-dm-serif-display">Welcome, {userName}!</CardTitle>
+            <p className="text-center text-muted-foreground mt-2">Launch a customer satisfaction survey.</p>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-2">

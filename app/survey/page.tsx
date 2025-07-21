@@ -67,7 +67,7 @@ export default function SurveyPage() {
 
   return (
     <AppLayout
-      pageTitle={`Survey: ${surveyName || "Unknown"}`}
+      pageTitle={`Survey: ${surveyName || "Unknown"} (Flight: ${flightNumber || "N/A"})`}
       headerRight={
         <Button
           variant="ghost"
@@ -80,29 +80,37 @@ export default function SurveyPage() {
         </Button>
       }
     >
-      <main className="flex-1 flex flex-col px-4 pb-2 pt-4 h-[calc(100vh-100px)]"> {/* 100px = header + margin */}
-        <Card className="flex-1 flex flex-col bg-fitsair-white text-fitsair-dark-blue shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-500">
-          <CardContent className="flex-1 p-0">
-            <iframe
-              src={surveyUrl}
-              className="w-full h-full min-h-[500px] border-0"
-              title="Customer Survey"
-              allowFullScreen
-            ></iframe>
-          </CardContent>
-        </Card>
-        <div className="mt-4 text-center">
-          <p className="text-sm text-fitsair-white mb-2">
-            {isOnline ? "You are online." : "You are offline. Survey records will be stored locally."}
+      {/* Full-height container */}
+      <div className="flex flex-col h-screen">
+        {/* Main area with iframe */}
+        <div className="flex-1 flex flex-col px-4 pt-4 pb-0">
+          <Card className="flex-1 flex flex-col bg-fitsair-white text-fitsair-dark-blue shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+            <CardContent className="flex-1 p-0 overflow-hidden">
+              <iframe
+                src={surveyUrl}
+                className="w-full h-full border-0"
+                title="Customer Survey"
+                allowFullScreen
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Footer actions */}
+        <div className="mt-2 p-4 text-center bg-fitsair-dark-blue text-fitsair-white">
+          <p className="text-sm mb-2">
+            {isOnline
+              ? "You are online."
+              : "You are offline. Survey records will be stored locally."}
           </p>
           <Button
             onClick={handleCloseSurvey}
-            className="bg-fitsair-dark-blue hover:bg-fitsair-dark-blue/90 text-fitsair-white py-2 px-4 text-base font-semibold transition-colors font-dm-serif-display"
+            className="bg-fitsair-white text-fitsair-dark-blue py-2 px-4 text-base font-semibold transition-colors font-dm-serif-display"
           >
             Mark Survey as Completed & Close
           </Button>
         </div>
-      </main>
+      </div>
     </AppLayout>
   )
 }

@@ -97,7 +97,7 @@ export default function SettingsPage() {
                   type="url"
                   value={newSurveyUrl}
                   onChange={(e) => setNewSurveyUrl(e.target.value)}
-                  placeholder="e.g., https://emo.run/titusonline"
+                  placeholder="e.g., https://emojot.com/titusonline"
                   className="h-10 text-base focus-visible:ring-fitsair-dark-blue"
                 />
               </div>
