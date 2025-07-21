@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import Button from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getSurveyRecords, deleteSurveyRecord, addSurveyRecord } from "@/lib/indexed-db"
 import { Trash2, RefreshCw } from "lucide-react"
