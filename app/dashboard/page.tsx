@@ -1,0 +1,109 @@
+"use client"
+
+import { Label } from "@/components/ui/label"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { getStoredSurveys, getStoredFlightNumbers } from "@/lib/indexed-db"
+import AppLayout from "@/components/layout/app-layout"
+
+export default function DashboardPage() {
+  const router = useRouter()
+  const [surveys, setSurveys] = useState<{ id: number; name: string; url: string }[]>([])
+  const [flightNumbers, setFlightNumbers] = useState<{ id: number; number: string }[]>([])
+  const [selectedSurveyId, setSelectedSurveyId] = useState<string | null>(null)
+  const [selectedFlightNumberId, setSelectedFlightNumberId] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Check authentication
+    if (typeof window !== "undefined" && !localStorage.getItem("isAuthenticated")) {
+      router.replace("/login")
+    }
+
+    const loadData = async () => {
+      const storedSurveys = await getStoredSurveys()
+      const storedFlightNumbers = await getStoredFlightNumbers()
+      setSurveys(storedSurveys)
+      setFlightNumbers(storedFlightNumbers)
+      if (storedSurveys.length > 0 && !selectedSurveyId) {
+        setSelectedSurveyId(String(storedSurveys[0].id))
+      }
+      if (storedFlightNumbers.length > 0 && !selectedFlightNumberId) {
+        setSelectedFlightNumberId(String(storedFlightNumbers[0].id))
+      }
+    }
+    loadData()
+  }, [router, selectedSurveyId, selectedFlightNumberId])
+
+  const handleLaunchSurvey = () => {
+    if (selectedSurveyId && selectedFlightNumberId) {
+      const survey = surveys.find((s) => String(s.id) === selectedSurveyId)
+      const flight = flightNumbers.find((f) => String(f.id) === selectedFlightNumberId)
+      if (survey && flight) {
+        router.push(
+          `/survey?url=${encodeURIComponent(survey.url)}&flight=${encodeURIComponent(flight.number)}&surveyName=${encodeURIComponent(survey.name)}`,
+        )
+      }
+    }
+  }
+
+  return (
+    <AppLayout pageTitle="Dashboard">
+      <main className="flex-1 p-4 flex flex-col items-center justify-center">
+        <Card className="w-full max-w-md bg-fitsair-white text-fitsair-dark-blue p-6 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-center text-3xl font-bold font-dm-serif-display">
+              Launch Customer Survey
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            <div className="grid gap-2">
+              <Label htmlFor="survey-select" className="text-lg font-medium">
+                Select Survey
+              </Label>
+              <Select value={selectedSurveyId || ""} onValueChange={setSelectedSurveyId}>
+                <SelectTrigger id="survey-select" className="h-12 text-base focus:ring-fitsair-dark-blue">
+                  <SelectValue placeholder="Select a survey" />
+                </SelectTrigger>
+                <SelectContent>
+                  {surveys.map((survey) => (
+                    <SelectItem key={survey.id} value={String(survey.id)}>
+                      {survey.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="flight-select" className="text-lg font-medium">
+                Select Flight Number
+              </Label>
+              <Select value={selectedFlightNumberId || ""} onValueChange={setSelectedFlightNumberId}>
+                <SelectTrigger id="flight-select" className="h-12 text-base focus:ring-fitsair-dark-blue">
+                  <SelectValue placeholder="Select a flight number" />
+                </SelectTrigger>
+                <SelectContent>
+                  {flightNumbers.map((flight) => (
+                    <SelectItem key={flight.id} value={String(flight.id)}>
+                      {flight.number}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={handleLaunchSurvey}
+              disabled={!selectedSurveyId || !selectedFlightNumberId}
+              className="w-full bg-fitsair-dark-blue hover:bg-fitsair-dark-blue/90 text-fitsair-white py-3 text-lg font-semibold transition-colors font-dm-serif-display"
+            >
+              Launch Survey
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    </AppLayout>
+  )
+}
